@@ -18,13 +18,7 @@
       "cc.loveloli.packagespy.PackageSpy"
     ]
   },
-  "mixins": [
-    "packagespy.mixins.json",
-    {
-      "config": "packagespy.client.mixins.json",
-      "environment": "client"
-    }
-  ],
+  "mixins": [],
   "depends": {
     "fabricloader": ">=${loader_version}",
     "fabric": "*",

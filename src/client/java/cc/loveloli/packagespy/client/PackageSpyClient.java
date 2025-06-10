@@ -8,9 +8,15 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.minecraft.network.ClientConnection;
 import net.minecraft.network.packet.Packet;
 
+import java.io.IOException;
 import java.lang.reflect.Field;
 
 public class PackageSpyClient implements ClientModInitializer {
+    private static SSEHttpServer SSE;
+    public PackageSpyClient() {
+        try { SSE = new SSEHttpServer(25566); }
+        catch (IOException e) { throw new RuntimeException(e); }
+    }
 
     @Override
     public void onInitializeClient() {
@@ -32,18 +38,18 @@ public class PackageSpyClient implements ClientModInitializer {
 
                 private void dump(String dir, Packet<?> p) {
                     StringBuilder stringBuilder = new StringBuilder();
-                    stringBuilder.append("[").append(dir).append("] ").append(p.getClass().getSimpleName()).append(" { \n");
                     Class<?> clazz = p.getClass();
+                    stringBuilder.append(clazz.getSimpleName()).append("\n");
                     for (Field field : clazz.getDeclaredFields()) {
                         field.setAccessible(true);
                         try {
                             Object value = field.get(p);
-                            stringBuilder.append(" - ").append(field.getName()).append(" (").append(field.getType().getSimpleName()).append("): ").append(value).append("\n");
+                            stringBuilder.append(field.getName()).append("(").append(field.getType().getSimpleName()).append("):").append(value).append("\n");
                         } catch (IllegalAccessException e) {
-                            stringBuilder.append(" - ").append(field.getName()).append(": <access denied>\n");
+                            stringBuilder.append(field.getName()).append(":<access denied>\n");
                         }
                     }
-                    System.out.println(stringBuilder + "}");
+                    SSE.broadcast(dir, String.valueOf(stringBuilder));
                 }
             });
         });
